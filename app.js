@@ -30,8 +30,16 @@ app.get('/book/builder/:quantity', function (request, response) {
     } else if (quantity < 1 || quantity > builder.limit) {
         response.send(400, { error: 'Specified parameter exceeds limit (1-' + builder.limit + ').' });
     } else {
-       response.json(builder.create(quantity));
+        // Modified to satisfy expected Ember.js JSON structure
+        // http://emberjs.com/api/data/classes/DS.RESTAdapter.html
+       response.json({ books: builder.create(quantity) });
     }
+});
+
+// Backward compatibility with previous endpoint
+// Consumed by e.g. https://github.com/nanotaboada/javascript
+app.get('/books', function (request, response) {
+    response.json({ books: builder.create(10) });
 });
 
 // Uncomment only after placing your favicon in /public
