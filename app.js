@@ -12,7 +12,8 @@ var path = require('path');
 var builder = require('./book/builder.js');
 var pg = require('pg');
 pg.defaults.ssl = true;
-var connectionString = process.env.DATABASE_URL || 'postgres:///$(whoami)';
+// heroku pg:pull DATABASE_URL heroku-local --app node-samples-paas
+var connectionString = process.env.DATABASE_URL || 'postgres:///heroku-local';
 var client = new pg.Client(connectionString);
 
 var app = express();
@@ -30,9 +31,9 @@ app.get('/book/builder/:quantity', function(request, response) {
     var quantity = request.params.quantity,
         limit = builder.limit;
     if (isNaN(quantity)) {
-        response.send(400, { error: 'Specified parameter must be a number.' });
+        response.status(400).send({ error: 'Specified parameter must be a number.' });
     } else if (quantity < 1 || quantity > builder.limit) {
-        response.send(400, { error: 'Specified parameter exceeds limit (1-' + builder.limit + ').' });
+        response.status(400).send({ error: 'Specified parameter exceeds limit (1-' + builder.limit + ').' });
     } else {
         // Modified to satisfy expected Ember.js JSON structure
         // http://emberjs.com/api/data/classes/DS.RESTAdapter.html
@@ -48,7 +49,7 @@ app.get('/books', function(request, response, next) {
         if (error) {
             done();
             console.log(error);
-            return response.send(500, { error: error });
+            return response.status(500).send({ error: error });
         }
         var query = client.query('SELECT * FROM Books');
         query.on('row', function(row) {
@@ -59,7 +60,25 @@ app.get('/books', function(request, response, next) {
             return response.json({ books: results });
         });
     });
+});
 
+app.get('/songs', function(request, response, next) {
+    var results = [];
+    pg.connect(connectionString, function(error, client, done) {
+        if (error) {
+            done();
+            console.log(error);
+            return response.status(500).send({ error: error });
+        }
+        var query = client.query('SELECT * FROM Songs');
+        query.on('row', function(row) {
+            results.push(row);
+        });
+        query.on('end', function() {
+            done();
+            return response.json(results);
+        });
+    });
 });
 
 // Uncomment only after placing your favicon in /public
