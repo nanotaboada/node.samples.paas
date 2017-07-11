@@ -4,12 +4,15 @@
    Module Dependencies & Configuration
 -------------------------------------------------------------------------- */
 
+var builder = require('./book/builder.js');
+
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var cors = require('cors');
 var express = require('express');
 var path = require('path');
-var builder = require('./book/builder.js');
+var winston = require('winston');
+
 var pg = require('pg');
 pg.defaults.ssl = true;
 // heroku pg:pull DATABASE_URL heroku-local --app node-samples-paas

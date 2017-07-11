@@ -1,50 +1,15 @@
 #!/usr/bin/env node
 
 var app = require('./app');
-var debug = require('debug')('node.samples.paas:server');
-var http = require('http');
-var port = normalizePort(process.env.PORT || '8888');
+var winston = require('winston');
+var port = process.env.PORT || '8888';
+
+winston.log('info', 'Express server started.');
 
 app.set('port', port);
 
-var server = http.createServer(app);
+app.listen(port, function() {
+    winston.log('info', 'Express server listening on port ' + port);
+});
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
-
-function normalizePort(value) {
-    var port = parseInt(value, 10);
-        if (isNaN(port)) {
-            return value; // Pipe
-        }
-        if (port >= 0) {
-            return port; // Port
-        }
-    return false;
-}
-
-function onError(error) {
-    if (error.syscall !== 'listen') {
-        throw error;
-    }
-    var bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
-    switch (error.code) {
-        case 'EACCES':
-            console.error(bind + ' requires elevated privileges');
-            process.exit(1);
-            break;
-        case 'EADDRINUSE':
-            console.error(bind + ' is already in use');
-            process.exit(1);
-            break;
-        default:
-            throw error;
-    }
-}
-
-function onListening() {
-    var address = server.address();
-    var bind = typeof address === 'string' ? 'pipe ' + address : 'port ' + address.port;
-    debug('Listening on ' + bind);
-}
+winston.log('info', 'Express server stopped.');
